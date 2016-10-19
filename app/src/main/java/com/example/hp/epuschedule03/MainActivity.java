@@ -1,9 +1,12 @@
 package com.example.hp.epuschedule03;
 
+import android.app.Dialog;
+import android.net.sip.SipAudioCall;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -13,6 +16,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.hp.epuschedule03.Database.RealmHandle;
 import com.example.hp.epuschedule03.Database.monHocModel;
@@ -31,12 +37,15 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private monHocModel model;
     private RealmHandle realmHandle;
+    private Dialog dialog;
+    private Button btnDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //
+        createDialog();
         // creating a new thread to avoid exception
         new Thread(new Runnable() {
             @Override
@@ -60,8 +69,9 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+                dialog.show();
             }
         });
 
@@ -131,6 +141,7 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
     // initializing somme  neccessary object
     private void init() {
         Realm.init(this);
@@ -179,6 +190,23 @@ public class MainActivity extends AppCompatActivity
             Log.d("thaohandsome", "getHTML: " + monHocModel.getTenMH());
         }
 
+
+    }
+    public void createDialog(){
+        LayoutInflater inflater = getLayoutInflater();
+        View alertLayout = inflater.inflate(R.layout.custom_popup_dialog, null);
+        dialog= new Dialog(MainActivity.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.custom_popup_dialog);
+//        dialog.reques
+//        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        btnDialog= (Button) alertLayout.findViewById(R.id.btnDone);
+        btnDialog.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(MainActivity.this, "press button done on pop up dialog", Toast.LENGTH_SHORT).show();
+            }
+        });
 
     }
 }
