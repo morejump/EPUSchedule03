@@ -7,6 +7,7 @@ import io.realm.RealmObject;
  */
 
 public class monHocModel extends RealmObject{
+    private String tenSV;
     private String maSV;// using this field to check whether student's database is aldready persist on system or not
     private String maMH;
     private String tenMH;
@@ -22,6 +23,13 @@ public class monHocModel extends RealmObject{
     private String phong;
     private String CBGD;
     private String tuan;
+    public String getTenSV() {
+        return tenSV;
+    }
+
+    public void setTenSV(String tenSV) {
+        this.tenSV = tenSV;
+    }
     public String getMaSV() {
         return maSV;
     }

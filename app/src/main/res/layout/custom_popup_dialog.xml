@@ -14,7 +14,7 @@
         android:id="@+id/txtMaSV" />
     <EditText
         android:id="@+id/edtMaSV"
-        android:hint=" Type student's ID... "
+        android:hint=" Type your ID here  "
         android:background="@color/grey"
         android:inputType="number"
         android:maxLines="1"
