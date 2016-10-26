@@ -17,9 +17,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.hp.epuschedule03.Database.RealmHandle;
-import com.example.hp.epuschedule03.Database.monHocModel;
-import com.example.hp.epuschedule03.Database.tuanHocModel;
+import com.example.hp.epuschedule03.Database.Database;
+import com.example.hp.epuschedule03.Database.Student;
+import com.example.hp.epuschedule03.Database.Subject;
+import com.example.hp.epuschedule03.Database.Week;
 import com.example.hp.epuschedule03.Utils.Utils;
 
 import org.jsoup.Jsoup;
@@ -32,17 +33,14 @@ import java.util.ArrayList;
 
 import io.realm.Realm;
 
-import static android.R.id.list;
-
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-    private monHocModel mhModel;
-    private tuanHocModel thModel;
-    private RealmHandle realmHandle;
     private Dialog dialog;
     private Button btnDialog;
-    private EditText edtMaSV;
+    private EditText edtID;
     private Toolbar toolbar;
+    private Student student;
+    private Database database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,13 +48,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         Realm.init(this);
-        realmHandle = new RealmHandle();
-        Log.d("thaohandsome", "onCreate: "+realmHandle.findWeek("1381310069"));
-//        realmHandle.findWeek("1381310069");
-
-        //
-//        Log.d("thaohandsome", "onCreate: "+realmHandle.findTenSV("1481310029").toString());
-        init();
         // toolbar
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -66,6 +57,7 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                createDialog();
                 dialog.show();
             }
         });
@@ -130,42 +122,34 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    // initializing somme  neccessary object
-    private void init() {
-        Realm.init(this);
-//        mhModel = new monHocModel();
-        createDialog();
 
-    }
     // get week's time
-    private void getTimeOfWeek(String maSV) throws IOException {
-        int tuan=1;
-        int i=0;
-        //
-        thModel = new tuanHocModel();
-        Document doc = Jsoup.connect("http://dkmh.epu.edu.vn/Default.aspx?page=thoikhoabieu&id=" + maSV)
+    private void getTimeOfWeek(String ID) throws IOException {
+        Realm realm = Realm.getDefaultInstance(); // avoid crashing when work with multi-thread
+        Week week = new Week();
+        int i = 0;
+        int tuan = 1;
+        Document doc = Jsoup.connect("http://dkmh.epu.edu.vn/Default.aspx?page=thoikhoabieu&id=" + ID)
                 .maxBodySize(0)
                 .timeout(0)
                 .get();
-
+        Student student = database.findStudentByID(ID); // get the student with corresponding ID // create a new student
         // starting parse the html
         Elements elements = doc.select("#ctl00_ContentPlaceHolder1_ctl00_ddlTuan option");
-        //
-        for (Element element : elements){// loop
-
-            thModel.setMaSV(maSV);
-            thModel.setTuan(tuan);
-            ArrayList<String> list= Utils.splitWeek(element.select("option:eq("+i+")").text());
-            thModel.setThoiGianBD(list.get(0));
-            thModel.setThoiGianKT(list.get(1));
-            realmHandle.addtuanHocModel(thModel);
-            Log.d("thaohandsome", "getTimeOfWeek: "+list.get(0));
-            Log.d("thaohandsome", "getTimeOfWeek: "+list.get(1));
-            Log.d("thaohandsome", "getTimeOfWeek: "+tuan);
-            Log.d("thaohandsome", "getTimeOfWeek: "+element.select("option:eq("+i+")").text());
+        Log.d("thaohandsome", "getTimeOfWeek: "+elements.size());
+        for (Element element : elements) {// loop
+            // assign value to student's properties above
+            ArrayList<String> list = Utils.splitWeek(element.select("option:eq(" + i + ")").text());
+            realm.beginTransaction();
+            week.setThoigianBD(list.get(0));
+            week.setThoigianKT(list.get(1));
+            week.setTuan(tuan);
+            Log.d("thaohandsome", "getTimeOfWeek: "+list.get(0)+" "+tuan+"  "+list.get(1));// just for testing
+            student.weekRealmList.add(week);
             // increase
             i++;
             tuan++;
+            realm.commitTransaction();
 
         }
 
@@ -173,41 +157,42 @@ public class MainActivity extends AppCompatActivity
     }
 
     // get html to process
-    private void getSchedule(String maSV) throws IOException {
-        //
-        mhModel = new monHocModel();
-        Document doc = Jsoup.connect("http://dkmh.epu.edu.vn/default.aspx?page=thoikhoabieu&sta=1&id=" + maSV)
+    private void getSchedule(String ID) throws IOException {
+        Realm realm = Realm.getDefaultInstance();
+        Student student= new Student();
+        int i = 0;
+        Document doc = Jsoup.connect("http://dkmh.epu.edu.vn/default.aspx?page=thoikhoabieu&sta=1&id=" + ID)
                 .maxBodySize(0)
                 .timeout(0)
                 .get();
-        Elements elements = doc.select("table.body-table td");
+        Elements elements = doc.select("table.body-table");
         //
-        int a= elements.size();
-        Log.d("thaohandsome01", "getTimeOfWeek: "+a);
+        Log.d("thaohandsome", "getSchedule: "+elements.size());
         for (Element element : elements) {
-            String value01 = element.select("td:eq(1)").text();
-            String value = element.select("td:eq(0)").text();
-            System.out.println(value);
-            System.out.println(value01);
-            //
-            mhModel.setTenSV(doc.select("#ctl00_ContentPlaceHolder1_ctl00_lblContentTenSV").text()); // get by ID
-            mhModel.setMaSV(doc.select("#ctl00_ContentPlaceHolder1_ctl00_lblContentMaSV").text());
-            mhModel.setMaMH(element.select("td:eq(0)").text());
-            mhModel.setTenMH(element.select("td:eq(1)").text());
-            mhModel.setNhomMH(element.select("td:eq(2)").text());
-            mhModel.setSTC(element.select("td:eq(3)").text());
-            mhModel.setMaLop(element.select("td:eq(4)").text());
-            mhModel.setSTCHP(element.select("td:eq(5)").text());
-            mhModel.setKDK(element.select("td:eq(6)").text());
-            mhModel.setTH(element.select("td:eq(7)").text());
-            mhModel.setThu(element.select("td:eq(8)").text());
-            mhModel.setTietBatDau(element.select("td:eq(9)").text());
-            mhModel.setST(element.select("td:eq(10)").text());
-            mhModel.setPhong(element.select("td:eq(11)").text());
-            mhModel.setCBGD(element.select("td:eq(12)").text());
-            mhModel.setTuan(element.select("td:eq(13)").text());
-            // add above object to schedule on database :))
-            realmHandle.addMonHoc(mhModel);
+            Subject subject = new Subject();
+            realm.beginTransaction();
+            student.setID(ID);
+            student.setName(doc.select("#ctl00_ContentPlaceHolder1_ctl00_lblContentTenSV").text());
+            subject.setTuan(element.select("td:eq(13)").text());
+            subject.setMaMH(element.select("td:eq(0)").text());
+            subject.setCBGD(element.select("td:eq(12)").text());
+            subject.setMaLop(element.select("td:eq(4)").text());
+            subject.setPhong(element.select("td:eq(11)").text());
+            subject.setST(element.select("td:eq(10)").text());
+            subject.setTenMH(element.select("td:eq(1)").text());
+            subject.setThu(element.select("td:eq(8)").text());
+            subject.setTietBD(element.select("td:eq(9)").text());
+            Log.d("thaohandsome", "getSchedule: "+doc.select("#ctl00_ContentPlaceHolder1_ctl00_lblContentTenSV").text());
+            Log.d("thaohandsome", "getSchedule: "+element.select("td:eq(13)").text());
+            Log.d("thaohandsome", "getSchedule: "+element.select("td:eq(0)").text());
+            Log.d("thaohandsome", "getSchedule: "+element.select("td:eq(12)").text());
+            Log.d("thaohandsome", "getSchedule: ---------------------------------------------------------------------------------");
+            student.subjectRealmList.add(subject);
+            realm.commitTransaction();
+            database.addStudent(student);
+
+            // increase i
+            i++;
 
         }
 
@@ -220,49 +205,51 @@ public class MainActivity extends AppCompatActivity
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.custom_popup_dialog);
         btnDialog = (Button) dialog.findViewById(R.id.btnDone);
-        edtMaSV = (EditText) dialog.findViewById(R.id.edtMaSV);
+        edtID = (EditText) dialog.findViewById(R.id.edtMaSV);
         btnDialog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                toolbar.setTitle(edtMaSV.getText().toString());// change title of tool bar here :))
-                realmHandle = new RealmHandle();
-                // before dismissing the pop-up dialog , check internet and student's id is exist on database??
-                // first case, check it on database
-                if (realmHandle.existStudent(edtMaSV.getText().toString()) == true && Utils.checkInternet(MainActivity.this) == true) {
-                    // do something here :))
-                    Toast.makeText(MainActivity.this, "student is already on database, do you want to update ???", Toast.LENGTH_SHORT).show();
-                    return;
-                } else if (realmHandle.existStudent(edtMaSV.getText().toString()) == true && Utils.checkInternet(MainActivity.this) == false) {
-                    // displaying information about student imidiately :))
+                toolbar.setTitle(edtID.getText().toString());// change title of tool bar here :))
+                if (Utils.checkInternet(MainActivity.this) == false) {
+                    Toast.makeText(MainActivity.this, "Enable ur connection, plz!!!", Toast.LENGTH_SHORT).show();
+                }
+                // 
+                if (Utils.checkInternet(MainActivity.this) == true) { // in case this connection is online
+                    // getting value from dkmh.epu.edu.vn
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            database = new Database();
+//                            Toast.makeText(MainActivity.this, "dcm no nhe", Toast.LENGTH_SHORT).show();
+                            if (database.findStudentByID(edtID.getText().toString()) == null) {
 
-                    Toast.makeText(MainActivity.this, "Welcome! " + realmHandle.findTenSV(edtMaSV.getText().toString()).toString(), Toast.LENGTH_SHORT).show();
-                    return;
-                } else if (realmHandle.existStudent(edtMaSV.getText().toString()) == false) {
-                    if (Utils.checkInternet(MainActivity.this) == false) {
-                        Toast.makeText(MainActivity.this, "Enable your connection and try again, plz!!!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        // begin parse html here
-                        Toast.makeText(MainActivity.this, "begin parse html first time", Toast.LENGTH_SHORT).show();
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
+                                // more clear about two methods, go inside them
                                 try {
-                                    realmHandle = new RealmHandle();
-                                    getSchedule(edtMaSV.getText().toString());// getting html from dkmh.epu.edu.vn to process
-                                    getTimeOfWeek(edtMaSV.getText().toString());
-
+                                    getSchedule(edtID.getText().toString());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                try {
+                                    getTimeOfWeek(edtID.getText().toString());
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
                             }
-                        }).start();
+
+                        }
+                    }).start();
+                    database = new Database();
+                    if (database.findStudentByID(edtID.getText().toString()) != null) {
+                        database = new Database();
+                        Toast.makeText(MainActivity.this, "Welcome " + database.findStudentByID(edtID.getText().toString()).subjectRealmList.get(2).getTuan(), Toast.LENGTH_SHORT).show();
+
+
                     }
+
+
                 }
-
-//                dialog.dismiss();
-
-//                Toast.makeText(MainActivity.this, "press button done on pop up dialog", Toast.LENGTH_SHORT).show();// change later :))
             }
+
         });
 
     }
