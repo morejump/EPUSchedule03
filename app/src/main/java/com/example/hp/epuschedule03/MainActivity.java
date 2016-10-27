@@ -30,6 +30,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import io.realm.Realm;
 
@@ -136,7 +137,7 @@ public class MainActivity extends AppCompatActivity
         Student student = database.findStudentByID(ID); // get the student with corresponding ID // create a new student
         // starting parse the html
         Elements elements = doc.select("#ctl00_ContentPlaceHolder1_ctl00_ddlTuan option");
-        Log.d("thaohandsome", "getTimeOfWeek: "+elements.size());
+        Log.d("thaohandsome", "getTimeOfWeek: " + elements.size());
         for (Element element : elements) {// loop
             // assign value to student's properties above
             ArrayList<String> list = Utils.splitWeek(element.select("option:eq(" + i + ")").text());
@@ -144,7 +145,7 @@ public class MainActivity extends AppCompatActivity
             week.setThoigianBD(list.get(0));
             week.setThoigianKT(list.get(1));
             week.setTuan(tuan);
-            Log.d("thaohandsome", "getTimeOfWeek: "+list.get(0)+" "+tuan+"  "+list.get(1));// just for testing
+            Log.d("thaohandsome", "getTimeOfWeek: " + list.get(0) + " " + tuan + "  " + list.get(1));// just for testing
             student.weekRealmList.add(week);
             // increase
             i++;
@@ -159,7 +160,8 @@ public class MainActivity extends AppCompatActivity
     // get html to process
     private void getSchedule(String ID) throws IOException {
         Realm realm = Realm.getDefaultInstance();
-        Student student= new Student();
+        Student student = new Student();
+
         int i = 0;
         Document doc = Jsoup.connect("http://dkmh.epu.edu.vn/default.aspx?page=thoikhoabieu&sta=1&id=" + ID)
                 .maxBodySize(0)
@@ -167,8 +169,10 @@ public class MainActivity extends AppCompatActivity
                 .get();
         Elements elements = doc.select("table.body-table");
         //
-        Log.d("thaohandsome", "getSchedule: "+elements.size());
-        for (Element element : elements) {
+        Log.d("thaohandsome", "getSchedule: " + elements.size());
+        int size = elements.size();
+        for (int j = 0; j < size; j++) {
+            Element element = elements.get(j);
             Subject subject = new Subject();
             realm.beginTransaction();
             student.setID(ID);
@@ -182,22 +186,22 @@ public class MainActivity extends AppCompatActivity
             subject.setTenMH(element.select("td:eq(1)").text());
             subject.setThu(element.select("td:eq(8)").text());
             subject.setTietBD(element.select("td:eq(9)").text());
-            Log.d("thaohandsome", "getSchedule: "+doc.select("#ctl00_ContentPlaceHolder1_ctl00_lblContentTenSV").text());
-            Log.d("thaohandsome", "getSchedule: "+element.select("td:eq(13)").text());
-            Log.d("thaohandsome", "getSchedule: "+element.select("td:eq(0)").text());
-            Log.d("thaohandsome", "getSchedule: "+element.select("td:eq(12)").text());
+            Log.d("thaohandsome", "getSchedule: " + doc.select("#ctl00_ContentPlaceHolder1_ctl00_lblContentTenSV").text());
+            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(13)").text());
+            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(0)").text());
+            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(12)").text());
+            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(11)").text());
+            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(4)").text());
             Log.d("thaohandsome", "getSchedule: ---------------------------------------------------------------------------------");
             student.subjectRealmList.add(subject);
+//            list.add(subject);
             realm.commitTransaction();
-            database.addStudent(student);
-
-            // increase i
-            i++;
 
         }
-
+        database.addStudent(student);
 
     }
+
 
     // processing  the dialog here :))
     public void createDialog() {
@@ -241,7 +245,7 @@ public class MainActivity extends AppCompatActivity
                     database = new Database();
                     if (database.findStudentByID(edtID.getText().toString()) != null) {
                         database = new Database();
-                        Toast.makeText(MainActivity.this, "Welcome " + database.findStudentByID(edtID.getText().toString()).subjectRealmList.get(2).getTuan(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Welcome " + database.findStudentByID(edtID.getText().toString()).subjectRealmList.get(2).getTenMH(), Toast.LENGTH_SHORT).show();
 
 
                     }

@@ -1,5 +1,6 @@
 package com.example.hp.epuschedule03.Database;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.RealmList;
@@ -13,6 +14,7 @@ public class Student extends RealmObject {
     private String name;
     private String ID;
     public RealmList<Subject> subjectRealmList;
+//    public List<Subject> subjectRealmList;
     public RealmList<Week> weekRealmList;
 
     public Student() {
