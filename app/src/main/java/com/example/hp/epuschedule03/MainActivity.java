@@ -29,6 +29,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -134,6 +135,7 @@ public class MainActivity extends AppCompatActivity
                 .maxBodySize(0)
                 .timeout(0)
                 .get();
+        // get student to asign week to student's database
         Student student = database.findStudentByID(ID); // get the student with corresponding ID // create a new student
         // starting parse the html
         Elements elements = doc.select("#ctl00_ContentPlaceHolder1_ctl00_ddlTuan option");
@@ -153,8 +155,6 @@ public class MainActivity extends AppCompatActivity
             realm.commitTransaction();
 
         }
-
-
     }
 
     // get html to process
@@ -186,13 +186,13 @@ public class MainActivity extends AppCompatActivity
             subject.setTenMH(element.select("td:eq(1)").text());
             subject.setThu(element.select("td:eq(8)").text());
             subject.setTietBD(element.select("td:eq(9)").text());
-            Log.d("thaohandsome", "getSchedule: " + doc.select("#ctl00_ContentPlaceHolder1_ctl00_lblContentTenSV").text());
-            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(13)").text());
-            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(0)").text());
-            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(12)").text());
-            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(11)").text());
-            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(4)").text());
-            Log.d("thaohandsome", "getSchedule: ---------------------------------------------------------------------------------");
+//            Log.d("thaohandsome", "getSchedule: " + doc.select("#ctl00_ContentPlaceHolder1_ctl00_lblContentTenSV").text());
+//            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(13)").text());
+//            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(0)").text());
+//            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(12)").text());
+//            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(11)").text());
+//            Log.d("thaohandsome", "getSchedule: " + element.select("td:eq(4)").text());
+//            Log.d("thaohandsome", "getSchedule: ---------------------------------------------------------------------------------");
             student.subjectRealmList.add(subject);
 //            list.add(subject);
             realm.commitTransaction();
@@ -219,14 +219,13 @@ public class MainActivity extends AppCompatActivity
                 }
                 // 
                 if (Utils.checkInternet(MainActivity.this) == true) { // in case this connection is online
+                    Toast.makeText(MainActivity.this, "Internet is now available!", Toast.LENGTH_SHORT).show();
                     // getting value from dkmh.epu.edu.vn
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
                             database = new Database();
-//                            Toast.makeText(MainActivity.this, "dcm no nhe", Toast.LENGTH_SHORT).show();
                             if (database.findStudentByID(edtID.getText().toString()) == null) {
-
                                 // more clear about two methods, go inside them
                                 try {
                                     getSchedule(edtID.getText().toString());
@@ -239,18 +238,30 @@ public class MainActivity extends AppCompatActivity
                                     e.printStackTrace();
                                 }
                             }
-
                         }
                     }).start();
                     database = new Database();
                     if (database.findStudentByID(edtID.getText().toString()) != null) {
                         database = new Database();
-                        Toast.makeText(MainActivity.this, "Welcome " + database.findStudentByID(edtID.getText().toString()).subjectRealmList.get(2).getTenMH(), Toast.LENGTH_SHORT).show();
+                        Student student= database.findStudentByID(edtID.getText().toString());
+//                        Toast.makeText(MainActivity.this, "Welcome " + database.findStudentByID(edtID.getText().toString()).weekRealmList.get(2).getTuan(), Toast.LENGTH_SHORT).show();
+                        for (int i=0;i<student.weekRealmList.size();i++){
+                            String TGBD=student.weekRealmList.get(i).getThoigianBD();
+                            String TGKT = student.weekRealmList.get(i).getThoigianKT();
+                            try {
+                                if (Utils.dateComparation(TGBD,TGKT))
+                                {
+                                    // do somthing here :)
+                                    Toast.makeText(MainActivity.this, ""+student.weekRealmList.get(i).getTuan(), Toast.LENGTH_SHORT).show();
+                                    Utils.monPhaiHoc(student.subjectRealmList,4);
 
+                                }
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                        }
 
                     }
-
-
                 }
             }
 

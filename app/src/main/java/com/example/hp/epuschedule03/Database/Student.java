@@ -17,7 +17,7 @@ public class Student extends RealmObject {
 //    public List<Subject> subjectRealmList;
     public RealmList<Week> weekRealmList;
 
-    public Student() {
+    public Student() { // constructor
         subjectRealmList= new RealmList<>();
         weekRealmList= new RealmList<>();
     }

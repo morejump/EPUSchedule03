@@ -5,6 +5,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
+import com.example.hp.epuschedule03.Database.Subject;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -42,8 +44,11 @@ public class Utils {
     }
 
     public static Boolean dateComparation(String thoiGianBatDau, String thoiGianKT) throws ParseException { // getting current a week by comparing sith system's time
-        Date dateSystem = Calendar.getInstance().getTime();
+//        Date dateSystem = Calendar.getInstance().getTime();
+        String testDate ="10/01/2017";
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        Date dateSystem = dateFormat.parse(testDate);
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         Date dateBD= dateFormat.parse(thoiGianBatDau);
         Date dateKT= dateFormat.parse(thoiGianKT);
         if (dateBD.compareTo(dateSystem)<=0 && dateKT.compareTo(dateSystem)>=0){
@@ -51,6 +56,20 @@ public class Utils {
         }
 
         return false;
+    }
+    public static  List<Subject> monPhaiHoc(List<Subject> list, int tuan){
+        List<Subject> subjects= new ArrayList<Subject>();
+        int size= list.size();
+        for (int i=0;i<size;i++){
+            if (list.get(i).getTuan().length()!=0 && list.get(i).getTuan().charAt(tuan-1)!='-')
+            {
+                subjects.add(list.get(i));
+                Log.d("thaohandsome", ""+list.get(i).getTenMH());
+            }
+        }
+
+
+        return subjects;
     }
 
 
