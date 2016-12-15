@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import io.realm.Realm;
 
@@ -139,7 +140,7 @@ public class MainActivity extends AppCompatActivity
         Student student = database.findStudentByID(ID); // get the student with corresponding ID // create a new student
         // starting parse the html
         Elements elements = doc.select("#ctl00_ContentPlaceHolder1_ctl00_ddlTuan option");
-        Log.d("thaohandsome", "getTimeOfWeek: " + elements.size());
+//        Log.d("thaohandsome", "getTimeOfWeek: " + elements.size());
         for (Element element : elements) {// loop
             // assign value to student's properties above
             ArrayList<String> list = Utils.splitWeek(element.select("option:eq(" + i + ")").text());
@@ -147,7 +148,7 @@ public class MainActivity extends AppCompatActivity
             week.setThoigianBD(list.get(0));
             week.setThoigianKT(list.get(1));
             week.setTuan(tuan);
-            Log.d("thaohandsome", "getTimeOfWeek: " + list.get(0) + " " + tuan + "  " + list.get(1));// just for testing
+//            Log.d("thaohandsome", "getTimeOfWeek: " + list.get(0) + " " + tuan + "  " + list.get(1));// just for testing
             student.weekRealmList.add(week);
             // increase
             i++;
@@ -244,7 +245,6 @@ public class MainActivity extends AppCompatActivity
                     if (database.findStudentByID(edtID.getText().toString()) != null) {
                         database = new Database();
                         Student student= database.findStudentByID(edtID.getText().toString());
-//                        Toast.makeText(MainActivity.this, "Welcome " + database.findStudentByID(edtID.getText().toString()).weekRealmList.get(2).getTuan(), Toast.LENGTH_SHORT).show();
                         for (int i=0;i<student.weekRealmList.size();i++){
                             String TGBD=student.weekRealmList.get(i).getThoigianBD();
                             String TGKT = student.weekRealmList.get(i).getThoigianKT();
@@ -252,14 +252,20 @@ public class MainActivity extends AppCompatActivity
                                 if (Utils.dateComparation(TGBD,TGKT))
                                 {
                                     // do somthing here :)
-                                    Toast.makeText(MainActivity.this, ""+student.weekRealmList.get(i).getTuan(), Toast.LENGTH_SHORT).show();
-                                    Utils.monPhaiHoc(student.subjectRealmList,4);
+//                                    Toast.makeText(MainActivity.this, "thao"+student.weekRealmList.get(i).getTuan(), Toast.LENGTH_SHORT).show();
+//                                    Utils.monPhaiHoc(student.subjectRealmList,9);
 
                                 }
                             } catch (ParseException e) {
                                 e.printStackTrace();
                             }
                         }
+                        List<Subject> subjects=Utils.monPhaiHoc(student.subjectRealmList,9);
+                        for (int e=0;e<subjects.size();e++){
+                            Log.d("bug", "onClick: "+subjects.get(e).getTenMH());
+                            Log.d("bug", "onClick: "+subjects.get(e).getThu());
+                        }
+
 
                     }
                 }

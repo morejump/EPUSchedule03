@@ -64,7 +64,8 @@ public class Utils {
             if (list.get(i).getTuan().length()!=0 && list.get(i).getTuan().charAt(tuan-1)!='-')
             {
                 subjects.add(list.get(i));
-                Log.d("thaohandsome", ""+list.get(i).getTenMH());
+//                Log.d("monphaihoc", ""+list.get(i).getTenMH());
+//                Log.d("monphaihoc", ""+list.get(i).getThu());
             }
         }
 
