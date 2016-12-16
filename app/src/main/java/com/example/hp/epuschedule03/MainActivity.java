@@ -13,14 +13,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.hp.epuschedule03.Database.Database;
 import com.example.hp.epuschedule03.Database.Student;
 import com.example.hp.epuschedule03.Database.Subject;
 import com.example.hp.epuschedule03.Database.Week;
+import com.example.hp.epuschedule03.Model.CustomAdapter;
+import com.example.hp.epuschedule03.Model.Thu;
 import com.example.hp.epuschedule03.Utils.Utils;
 
 import org.jsoup.Jsoup;
@@ -44,13 +48,16 @@ public class MainActivity extends AppCompatActivity
     private Toolbar toolbar;
     private Student student;
     private Database database;
+    private ListView listView;
+    private ArrayList<Thu> list;
+    private CustomAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         Realm.init(this);
+
         // toolbar
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -73,6 +80,7 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        init();
     }
 
     @Override
@@ -124,6 +132,36 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+    // initialize method
+    private void init(){
+        Log.d("bug", "init: inside init() ");
+//        View view= getLayoutInflater().inflate(R.layout.content_main,null);
+        listView = (ListView) findViewById(R.id.listView); // linking to listview in xml file
+        list= new ArrayList<>(); // initializing arraylist :))
+        list.add(new Thu("Monday"));
+        list.add(new Thu("Tueday"));
+        list.add(new Thu("Wednesday"));
+        list.add(new Thu("Thurday"));
+        list.add(new Thu("Friday"));
+        list.add(new Thu("Saturday"));
+        list.add(new Thu("Sunday"));
+        Log.d("bug", "init: "+list.size());
+        for (int i=0;i<list.size();i++){
+            int a=i+1;
+            int resourceID = getResources().getIdentifier("thu"+a, "drawable", getPackageName());
+            list.get(i).setImagePath(resourceID);
+        }
+        adapter= new CustomAdapter(list,this);
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() { // catch click event when someone click item on listview // swtich to new activity
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // FIXME: 12/16/2016  swtich to new an activity in the future :)) // now  just for testing
+                Toast.makeText(MainActivity.this, "thao handosme", Toast.LENGTH_SHORT).show();
+            }
+        });
+        adapter.notifyDataSetChanged();
+    }
 
 
     // get week's time
@@ -140,7 +178,6 @@ public class MainActivity extends AppCompatActivity
         Student student = database.findStudentByID(ID); // get the student with corresponding ID // create a new student
         // starting parse the html
         Elements elements = doc.select("#ctl00_ContentPlaceHolder1_ctl00_ddlTuan option");
-//        Log.d("thaohandsome", "getTimeOfWeek: " + elements.size());
         for (Element element : elements) {// loop
             // assign value to student's properties above
             ArrayList<String> list = Utils.splitWeek(element.select("option:eq(" + i + ")").text());
@@ -148,7 +185,6 @@ public class MainActivity extends AppCompatActivity
             week.setThoigianBD(list.get(0));
             week.setThoigianKT(list.get(1));
             week.setTuan(tuan);
-//            Log.d("thaohandsome", "getTimeOfWeek: " + list.get(0) + " " + tuan + "  " + list.get(1));// just for testing
             student.weekRealmList.add(week);
             // increase
             i++;
@@ -251,6 +287,8 @@ public class MainActivity extends AppCompatActivity
                             try {
                                 if (Utils.dateComparation(TGBD,TGKT))
                                 {
+                                    // base on system's time to get current week
+                                    // after getting current week( specified week), we get what subject have to learn in week
                                     // do somthing here :)
 //                                    Toast.makeText(MainActivity.this, "thao"+student.weekRealmList.get(i).getTuan(), Toast.LENGTH_SHORT).show();
 //                                    Utils.monPhaiHoc(student.subjectRealmList,9);
