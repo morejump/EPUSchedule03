@@ -35,13 +35,13 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import io.realm.Realm;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+    private String maSV="notexsit";
     private Dialog dialog;
     private Button btnDialog;
     private EditText edtID;
@@ -132,12 +132,13 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
     // initialize method
-    private void init(){
+    private void init() {
         Log.d("bug", "init: inside init() ");
 //        View view= getLayoutInflater().inflate(R.layout.content_main,null);
         listView = (ListView) findViewById(R.id.listView); // linking to listview in xml file
-        list= new ArrayList<>(); // initializing arraylist :))
+        list = new ArrayList<>(); // initializing arraylist :))
         list.add(new Thu("Monday"));
         list.add(new Thu("Tueday"));
         list.add(new Thu("Wednesday"));
@@ -145,13 +146,13 @@ public class MainActivity extends AppCompatActivity
         list.add(new Thu("Friday"));
         list.add(new Thu("Saturday"));
         list.add(new Thu("Sunday"));
-        Log.d("bug", "init: "+list.size());
-        for (int i=0;i<list.size();i++){
-            int a=i+1;
-            int resourceID = getResources().getIdentifier("thu"+a, "drawable", getPackageName());
+        Log.d("bug", "init: " + list.size());
+        for (int i = 0; i < list.size(); i++) {
+            int a = i + 1;
+            int resourceID = getResources().getIdentifier("thu" + a, "drawable", getPackageName());
             list.get(i).setImagePath(resourceID);
         }
-        adapter= new CustomAdapter(list,this);
+        adapter = new CustomAdapter(list, this);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() { // catch click event when someone click item on listview // swtich to new activity
             @Override
@@ -250,13 +251,19 @@ public class MainActivity extends AppCompatActivity
         btnDialog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                database = new Database();
                 toolbar.setTitle(edtID.getText().toString());// change title of tool bar here :))
-                if (Utils.checkInternet(MainActivity.this) == false) {
+                if (Utils.checkInternet(MainActivity.this) == false & database.findStudentByID(edtID.getText().toString()) == null) {
                     Toast.makeText(MainActivity.this, "Enable ur connection, plz!!!", Toast.LENGTH_SHORT).show();
                 }
+                if (Utils.checkInternet(MainActivity.this) == false & database.findStudentByID(edtID.getText().toString()) != null){
+                    maSV= edtID.getText().toString(); // getting maSV
+                    Toast.makeText(MainActivity.this, "Done!!!", Toast.LENGTH_SHORT).show();
+                }
+
                 // 
-                if (Utils.checkInternet(MainActivity.this) == true) { // in case this connection is online
-                    Toast.makeText(MainActivity.this, "Internet is now available!", Toast.LENGTH_SHORT).show();
+                if (Utils.checkInternet(MainActivity.this) == true & database.findStudentByID(edtID.getText().toString()) == null) { // in case this connection is online
+                    Toast.makeText(MainActivity.this, "Wait a minute !", Toast.LENGTH_SHORT).show();
                     // getting value from dkmh.epu.edu.vn
                     new Thread(new Runnable() {
                         @Override
@@ -280,32 +287,50 @@ public class MainActivity extends AppCompatActivity
                     database = new Database();
                     if (database.findStudentByID(edtID.getText().toString()) != null) {
                         database = new Database();
-                        Student student= database.findStudentByID(edtID.getText().toString());
-                        for (int i=0;i<student.weekRealmList.size();i++){
-                            String TGBD=student.weekRealmList.get(i).getThoigianBD();
+                        Student student = database.findStudentByID(edtID.getText().toString());
+                        List<Subject> subjects = new ArrayList<Subject>();
+                        List<Subject> subjects01 = new ArrayList<Subject>();
+                        // starting find subject which is leared in week by using loop for
+                        for (int i = 0; i < student.weekRealmList.size(); i++) {
+                            String TGBD = student.weekRealmList.get(i).getThoigianBD();
                             String TGKT = student.weekRealmList.get(i).getThoigianKT();
                             try {
-                                if (Utils.dateComparation(TGBD,TGKT))
-                                {
+                                if (Utils.dateComparation(TGBD, TGKT)) {
                                     // base on system's time to get current week
                                     // after getting current week( specified week), we get what subject have to learn in week
                                     // do somthing here :)
-//                                    Toast.makeText(MainActivity.this, "thao"+student.weekRealmList.get(i).getTuan(), Toast.LENGTH_SHORT).show();
-//                                    Utils.monPhaiHoc(student.subjectRealmList,9);
+                                    Toast.makeText(MainActivity.this, "Week: " + student.weekRealmList.get(i).getTuan(), Toast.LENGTH_SHORT).show();
+                                    int tuan = student.weekRealmList.get(i).getTuan();
+                                    subjects = Utils.monPhaiHocTheoTuan(student.subjectRealmList, 9);
+                                    subjects01 = Utils.monPhaiHocTheoThu(1, subjects);
+
 
                                 }
                             } catch (ParseException e) {
                                 e.printStackTrace();
                             }
                         }
-                        List<Subject> subjects=Utils.monPhaiHoc(student.subjectRealmList,9);
-                        for (int e=0;e<subjects.size();e++){
-                            Log.d("bug", "onClick: "+subjects.get(e).getTenMH());
-                            Log.d("bug", "onClick: "+subjects.get(e).getThu());
+                        for (int e = 0; e < subjects.size(); e++) {
+                            Log.d("bug", "onClick: " + subjects.get(e).getTenMH());
+                            Log.d("bug", "onClick: " + subjects.get(e).getThu());
+                        }
+                        Log.d("bug", "onClick: "+subjects01.size());
+                        Log.d("bug", "onClick: ------------------------");
+                        for (int m = 0; m < subjects01.size(); m++) {
+                            Log.d("bug", "onClick: " + subjects01.get(m).getTenMH());
+                            Log.d("bug", "onClick: " + subjects01.get(m).getThu());
+
+
                         }
 
 
                     }
+
+                }
+                database = new Database();
+                if (Utils.checkInternet(MainActivity.this) == true & database.findStudentByID(edtID.getText().toString()) != null){
+                    maSV=edtID.getText().toString();
+                    Toast.makeText(MainActivity.this, "Database's student is already exsit!", Toast.LENGTH_SHORT).show();
                 }
             }
 

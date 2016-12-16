@@ -45,7 +45,7 @@ public class Utils {
 
     public static Boolean dateComparation(String thoiGianBatDau, String thoiGianKT) throws ParseException { // getting current a week by comparing sith system's time
 //        Date dateSystem = Calendar.getInstance().getTime();
-        String testDate ="10/01/2017";
+        String testDate ="21/02/2017";
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         Date dateSystem = dateFormat.parse(testDate);
 //        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
@@ -57,18 +57,28 @@ public class Utils {
 
         return false;
     }
-    public static  List<Subject> monPhaiHoc(List<Subject> list, int tuan){
+    public static  List<Subject> monPhaiHocTheoTuan(List<Subject> list, int tuan){
         List<Subject> subjects= new ArrayList<Subject>();
         int size= list.size();
         for (int i=0;i<size;i++){
             if (list.get(i).getTuan().length()!=0 && list.get(i).getTuan().charAt(tuan-1)!='-')
             {
                 subjects.add(list.get(i));
-//                Log.d("monphaihoc", ""+list.get(i).getTenMH());
-//                Log.d("monphaihoc", ""+list.get(i).getThu());
             }
         }
-
+        return subjects;
+    }
+    public static List<Subject> monPhaiHocTheoThu(int i, List<Subject> list){
+        ArrayList<Subject> subjects= new ArrayList<>();
+        int thu=i+2;
+        String s1= Integer.toString(thu);
+        //------------------
+        for (int j=0;j<list.size();j++){
+            String s2= list.get(j).getThu();
+            if (s2.toLowerCase().contains(s1.toLowerCase())){
+                subjects.add(list.get(j));
+            }
+        }
 
         return subjects;
     }
