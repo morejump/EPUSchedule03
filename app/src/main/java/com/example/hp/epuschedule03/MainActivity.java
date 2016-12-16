@@ -41,7 +41,7 @@ import io.realm.Realm;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-    private String maSV="notexsit";
+    private String maSV = "notexsit";
     private Dialog dialog;
     private Button btnDialog;
     private EditText edtID;
@@ -136,7 +136,6 @@ public class MainActivity extends AppCompatActivity
     // initialize method
     private void init() {
         Log.d("bug", "init: inside init() ");
-//        View view= getLayoutInflater().inflate(R.layout.content_main,null);
         listView = (ListView) findViewById(R.id.listView); // linking to listview in xml file
         list = new ArrayList<>(); // initializing arraylist :))
         list.add(new Thu("Monday"));
@@ -157,8 +156,35 @@ public class MainActivity extends AppCompatActivity
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() { // catch click event when someone click item on listview // swtich to new activity
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // FIXME: 12/16/2016  swtich to new an activity in the future :)) // now  just for testing
-                Toast.makeText(MainActivity.this, "thao handosme", Toast.LENGTH_SHORT).show();
+
+                database = new Database();
+                if (database.findStudentByID(edtID.getText().toString()) != null) {
+                    database = new Database();
+                    Student student = database.findStudentByID(edtID.getText().toString());
+                    List<Subject> subjects = new ArrayList<Subject>();
+                    List<Subject> subjects01 = new ArrayList<Subject>();
+                    // starting find subject which is leared in week by using loop for
+                    for (int i = 0; i < student.weekRealmList.size(); i++) {
+                        String TGBD = student.weekRealmList.get(i).getThoigianBD();
+                        String TGKT = student.weekRealmList.get(i).getThoigianKT();
+                        try {
+                            if (Utils.dateComparation(TGBD, TGKT)) {
+                                // base on system's time to get current week
+                                // after getting current week( specified week), we get what subject have to learn in week
+                                // do somthing here :)
+                                Toast.makeText(MainActivity.this, "Week: " + student.weekRealmList.get(i).getTuan(), Toast.LENGTH_SHORT).show();
+                                int tuan = student.weekRealmList.get(i).getTuan();
+                                subjects = Utils.monPhaiHocTheoTuan(student.subjectRealmList, 9);
+                                subjects01 = Utils.monPhaiHocTheoThu(1, subjects);
+
+
+                            }
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
             }
         });
         adapter.notifyDataSetChanged();
@@ -251,25 +277,24 @@ public class MainActivity extends AppCompatActivity
         btnDialog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                maSV = edtID.getText().toString();
                 database = new Database();
-                toolbar.setTitle(edtID.getText().toString());// change title of tool bar here :))
-                if (Utils.checkInternet(MainActivity.this) == false & database.findStudentByID(edtID.getText().toString()) == null) {
+                toolbar.setTitle(maSV);// change title of tool bar here :))
+                if (Utils.checkInternet(MainActivity.this) == false & database.findStudentByID(maSV) == null) {
                     Toast.makeText(MainActivity.this, "Enable ur connection, plz!!!", Toast.LENGTH_SHORT).show();
                 }
-                if (Utils.checkInternet(MainActivity.this) == false & database.findStudentByID(edtID.getText().toString()) != null){
-                    maSV= edtID.getText().toString(); // getting maSV
+                if (Utils.checkInternet(MainActivity.this) == false & database.findStudentByID(maSV) != null) {
                     Toast.makeText(MainActivity.this, "Done!!!", Toast.LENGTH_SHORT).show();
                 }
-
                 // 
-                if (Utils.checkInternet(MainActivity.this) == true & database.findStudentByID(edtID.getText().toString()) == null) { // in case this connection is online
+                if (Utils.checkInternet(MainActivity.this) == true & database.findStudentByID(maSV) == null) { // in case this connection is online
                     Toast.makeText(MainActivity.this, "Wait a minute !", Toast.LENGTH_SHORT).show();
                     // getting value from dkmh.epu.edu.vn
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
                             database = new Database();
-                            if (database.findStudentByID(edtID.getText().toString()) == null) {
+                            if (database.findStudentByID(maSV) == null) {
                                 // more clear about two methods, go inside them
                                 try {
                                     getSchedule(edtID.getText().toString());
@@ -284,52 +309,10 @@ public class MainActivity extends AppCompatActivity
                             }
                         }
                     }).start();
-                    database = new Database();
-                    if (database.findStudentByID(edtID.getText().toString()) != null) {
-                        database = new Database();
-                        Student student = database.findStudentByID(edtID.getText().toString());
-                        List<Subject> subjects = new ArrayList<Subject>();
-                        List<Subject> subjects01 = new ArrayList<Subject>();
-                        // starting find subject which is leared in week by using loop for
-                        for (int i = 0; i < student.weekRealmList.size(); i++) {
-                            String TGBD = student.weekRealmList.get(i).getThoigianBD();
-                            String TGKT = student.weekRealmList.get(i).getThoigianKT();
-                            try {
-                                if (Utils.dateComparation(TGBD, TGKT)) {
-                                    // base on system's time to get current week
-                                    // after getting current week( specified week), we get what subject have to learn in week
-                                    // do somthing here :)
-                                    Toast.makeText(MainActivity.this, "Week: " + student.weekRealmList.get(i).getTuan(), Toast.LENGTH_SHORT).show();
-                                    int tuan = student.weekRealmList.get(i).getTuan();
-                                    subjects = Utils.monPhaiHocTheoTuan(student.subjectRealmList, 9);
-                                    subjects01 = Utils.monPhaiHocTheoThu(1, subjects);
-
-
-                                }
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        for (int e = 0; e < subjects.size(); e++) {
-                            Log.d("bug", "onClick: " + subjects.get(e).getTenMH());
-                            Log.d("bug", "onClick: " + subjects.get(e).getThu());
-                        }
-                        Log.d("bug", "onClick: "+subjects01.size());
-                        Log.d("bug", "onClick: ------------------------");
-                        for (int m = 0; m < subjects01.size(); m++) {
-                            Log.d("bug", "onClick: " + subjects01.get(m).getTenMH());
-                            Log.d("bug", "onClick: " + subjects01.get(m).getThu());
-
-
-                        }
-
-
-                    }
 
                 }
                 database = new Database();
-                if (Utils.checkInternet(MainActivity.this) == true & database.findStudentByID(edtID.getText().toString()) != null){
-                    maSV=edtID.getText().toString();
+                if (Utils.checkInternet(MainActivity.this) == true & database.findStudentByID(maSV) != null) {
                     Toast.makeText(MainActivity.this, "Database's student is already exsit!", Toast.LENGTH_SHORT).show();
                 }
             }

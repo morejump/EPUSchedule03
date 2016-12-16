@@ -22,6 +22,6 @@ public class DetailSubject extends AppCompatActivity {
     }
     private void init(){
         listView= (ListView) findViewById(R.id.listView);
-        
+
     }
 }

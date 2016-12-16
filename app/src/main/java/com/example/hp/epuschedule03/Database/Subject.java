@@ -1,5 +1,6 @@
 package com.example.hp.epuschedule03.Database;
 
+import java.io.Serializable;
 import java.lang.ref.PhantomReference;
 
 import io.realm.RealmObject;
@@ -8,7 +9,7 @@ import io.realm.RealmObject;
  * Created by HP on 10/26/2016.
  */
 
-public class Subject extends RealmObject {
+public class Subject extends RealmObject implements Serializable{
     private String maMH;
     private String tenMH;
     private String maLop;
