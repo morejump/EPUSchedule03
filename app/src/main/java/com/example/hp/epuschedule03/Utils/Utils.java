@@ -4,8 +4,11 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.example.hp.epuschedule03.Database.Student;
 import com.example.hp.epuschedule03.Database.Subject;
+import com.example.hp.epuschedule03.MainActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -81,6 +84,37 @@ public class Utils {
         }
 
         return subjects;
+    }
+    public static int getCurrentWeek(Student student){
+        int size =student.weekRealmList.size();
+        for (int i = 0; i < size; i++) {
+            String TGBD = student.weekRealmList.get(i).getThoigianBD();
+            String TGKT = student.weekRealmList.get(i).getThoigianKT();
+            try {
+                if (Utils.dateComparation(TGBD, TGKT)) {
+                    int tuan = student.weekRealmList.get(i).getTuan();
+                    return tuan;
+
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        return -1;
+    }
+    // position is position of item on list: postion 0 ---> thu 2
+    public static List<Subject> getFinalResults(int tuan, int position, Student student){
+        int thu;
+        thu= position+2;
+        List<Subject> finalList= new ArrayList<>();
+        List<Subject> listWeek = new ArrayList<>();
+        listWeek= monPhaiHocTheoTuan(student.subjectRealmList, tuan);
+        finalList= Utils.monPhaiHocTheoThu(thu,listWeek);
+
+        return  finalList;
+
     }
 
 

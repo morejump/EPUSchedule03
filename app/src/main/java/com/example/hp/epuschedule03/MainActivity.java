@@ -1,6 +1,8 @@
 package com.example.hp.epuschedule03;
 
 import android.app.Dialog;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
@@ -23,9 +25,14 @@ import com.example.hp.epuschedule03.Database.Database;
 import com.example.hp.epuschedule03.Database.Student;
 import com.example.hp.epuschedule03.Database.Subject;
 import com.example.hp.epuschedule03.Database.Week;
+import com.example.hp.epuschedule03.Database.passSubject;
 import com.example.hp.epuschedule03.Model.CustomAdapter;
 import com.example.hp.epuschedule03.Model.Thu;
 import com.example.hp.epuschedule03.Utils.Utils;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -33,15 +40,20 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
-    private String maSV = "notexsit";
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private int tuan;
+    private Button btnNext;
+    private Button btnPrevious;
+    private EditText edtTuan;
+    private String maSV;
+    private Boolean hasMaSV;
     private Dialog dialog;
     private Button btnDialog;
     private EditText edtID;
@@ -51,12 +63,19 @@ public class MainActivity extends AppCompatActivity
     private ListView listView;
     private ArrayList<Thu> list;
     private CustomAdapter adapter;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Realm.init(this);
+        addListenr();
+        init();
 
         // toolbar
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -80,7 +99,9 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        init();
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     @Override
@@ -133,9 +154,41 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    private void addListenr() {
+        btnNext = (Button) findViewById(R.id.btnNext);
+        btnPrevious = (Button) findViewById(R.id.btnPrevious);
+        edtTuan = (EditText) findViewById(R.id.edtTuan);
+        btnPrevious.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (tuan > 1 && tuan <= 31) {
+                    tuan = tuan - 1;
+                    edtTuan.setText("" + tuan);
+                } else {
+                    Toast.makeText(MainActivity.this, "Tuần chỉ từ 1 đến 31", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+        btnNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (tuan >= 1 && tuan < 31) {
+                    tuan = tuan + 1;
+                    edtTuan.setText("" + tuan);
+                } else {
+                    Toast.makeText(MainActivity.this, "Tuần chỉ từ 1 đến 31", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+
+    }
+
     // initialize method
     private void init() {
-        Log.d("bug", "init: inside init() ");
+        tuan = 9;
+        hasMaSV = false;
         listView = (ListView) findViewById(R.id.listView); // linking to listview in xml file
         list = new ArrayList<>(); // initializing arraylist :))
         list.add(new Thu("Monday"));
@@ -156,35 +209,58 @@ public class MainActivity extends AppCompatActivity
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() { // catch click event when someone click item on listview // swtich to new activity
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                database = new Database();
-                if (database.findStudentByID(edtID.getText().toString()) != null) {
+                if (hasMaSV) {
                     database = new Database();
-                    Student student = database.findStudentByID(edtID.getText().toString());
-                    List<Subject> subjects = new ArrayList<Subject>();
-                    List<Subject> subjects01 = new ArrayList<Subject>();
-                    // starting find subject which is leared in week by using loop for
-                    for (int i = 0; i < student.weekRealmList.size(); i++) {
-                        String TGBD = student.weekRealmList.get(i).getThoigianBD();
-                        String TGKT = student.weekRealmList.get(i).getThoigianKT();
-                        try {
-                            if (Utils.dateComparation(TGBD, TGKT)) {
-                                // base on system's time to get current week
-                                // after getting current week( specified week), we get what subject have to learn in week
-                                // do somthing here :)
-                                Toast.makeText(MainActivity.this, "Week: " + student.weekRealmList.get(i).getTuan(), Toast.LENGTH_SHORT).show();
-                                int tuan = student.weekRealmList.get(i).getTuan();
-                                subjects = Utils.monPhaiHocTheoTuan(student.subjectRealmList, 9);
-                                subjects01 = Utils.monPhaiHocTheoThu(1, subjects);
-
+                    maSV = edtID.getText().toString();
+                    ///------------------------------------------
+                    Student student = database.findStudentByID(maSV);
+                    if (student != null) {
+                        toolbar.setTitle(student.getName());
+                        //
+                        List<Subject> list = new ArrayList<Subject>();
+                        List<passSubject> passSubjects= new ArrayList<passSubject>();
+                        //
+                        list = Utils.getFinalResults(tuan, position, student);
+                        if (list.size() == 0) {
+                            Toast.makeText(MainActivity.this, "No subject :))", Toast.LENGTH_SHORT).show();
+                        } else { // have something to display
+                            int size = list.size();
+                            for (int i=0;i<size;i++){
+                                //
+                                Subject subject= list.get(i);
+                                passSubject passSubject= new passSubject();
+                                //
+                                passSubject.setMaLop(subject.getMaLop());
+                                passSubject.setMaMH(subject.getMaMH());
+                                passSubject.setPhong(subject.getPhong());
+                                passSubject.setTenMH(subject.getTenMH());
+                                passSubject.setST(subject.getST());
+                                passSubject.setTietBD(subject.getTietBD());
+                                //
+                                passSubjects.add(passSubject);
 
                             }
-                        } catch (ParseException e) {
-                            e.printStackTrace();
+                            Intent intent = new Intent(MainActivity.this, DetailSubject.class);
+                            Bundle bundle = new Bundle();
+                            bundle.putSerializable("key", (Serializable) passSubjects);
+                            intent.putExtras(bundle);
+                            startActivity(intent);
+
+
+
                         }
+
+//                        for (int i = 0; i < passSubjects.size(); i++) {
+//                            Log.d("bug", "onItemClick: ---------------------------------" + list.get(i).getTenMH());
+//                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "Your ID is Incorrect", Toast.LENGTH_SHORT).show();
                     }
 
+                } else {
+                    Toast.makeText(MainActivity.this, "Enter ur ID, plz!!!", Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
         adapter.notifyDataSetChanged();
@@ -277,9 +353,15 @@ public class MainActivity extends AppCompatActivity
         btnDialog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                maSV = edtID.getText().toString();
                 database = new Database();
-                toolbar.setTitle(maSV);// change title of tool bar here :))
+                maSV = edtID.getText().toString();
+                toolbar.setTitle("Your ID, plz!!!");// change title of tool bar here :))
+
+                if (maSV != null && !maSV.isEmpty()) {
+                    hasMaSV = true;
+                    toolbar.setTitle(maSV);
+
+                }
                 if (Utils.checkInternet(MainActivity.this) == false & database.findStudentByID(maSV) == null) {
                     Toast.makeText(MainActivity.this, "Enable ur connection, plz!!!", Toast.LENGTH_SHORT).show();
                 }
@@ -311,7 +393,6 @@ public class MainActivity extends AppCompatActivity
                     }).start();
 
                 }
-                database = new Database();
                 if (Utils.checkInternet(MainActivity.this) == true & database.findStudentByID(maSV) != null) {
                     Toast.makeText(MainActivity.this, "Database's student is already exsit!", Toast.LENGTH_SHORT).show();
                 }
@@ -321,4 +402,39 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    public Action getIndexApiAction() {
+        Thing object = new Thing.Builder()
+                .setName("Main Page") // TODO: Define a title for the content shown.
+                // TODO: Make sure this auto-generated URL is correct.
+                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
+                .build();
+        return new Action.Builder(Action.TYPE_VIEW)
+                .setObject(object)
+                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
+                .build();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        AppIndex.AppIndexApi.start(client, getIndexApiAction());
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.end(client, getIndexApiAction());
+        client.disconnect();
+    }
 }

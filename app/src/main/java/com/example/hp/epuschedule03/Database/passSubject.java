@@ -1,24 +1,23 @@
 package com.example.hp.epuschedule03.Database;
 
 import java.io.Serializable;
-import java.lang.ref.PhantomReference;
-
-import io.realm.RealmObject;
 
 /**
- * Created by HP on 10/26/2016.
+ * Created by HP on 12/18/2016.
  */
 
-public class Subject extends RealmObject {
+public class passSubject  implements Serializable{
     private String maMH;
     private String tenMH;
     private String maLop;
-    private String thu;
-    private String tietBD;
-    private String ST;
-    private String phong;
-    private String CBGD;
-    private String tuan;
+
+    public String getTietBD() {
+        return tietBD;
+    }
+
+    public void setTietBD(String tietBD) {
+        this.tietBD = tietBD;
+    }
 
     public String getMaMH() {
         return maMH;
@@ -44,22 +43,6 @@ public class Subject extends RealmObject {
         this.maLop = maLop;
     }
 
-    public String getThu() {
-        return thu;
-    }
-
-    public void setThu(String thu) {
-        this.thu = thu;
-    }
-
-    public String getTietBD() {
-        return tietBD;
-    }
-
-    public void setTietBD(String tietBD) {
-        this.tietBD = tietBD;
-    }
-
     public String getST() {
         return ST;
     }
@@ -76,19 +59,7 @@ public class Subject extends RealmObject {
         this.phong = phong;
     }
 
-    public String getCBGD() {
-        return CBGD;
-    }
-
-    public void setCBGD(String CBGD) {
-        this.CBGD = CBGD;
-    }
-
-    public String getTuan() {
-        return tuan;
-    }
-
-    public void setTuan(String tuan) {
-        this.tuan = tuan;
-    }
+    private String tietBD;
+    private String ST;
+    private String phong;
 }

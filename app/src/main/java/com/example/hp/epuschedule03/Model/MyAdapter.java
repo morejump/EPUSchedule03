@@ -9,20 +9,22 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.hp.epuschedule03.Database.Subject;
+import com.example.hp.epuschedule03.Database.passSubject;
 import com.example.hp.epuschedule03.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by HP on 12/16/2016.
  */
 
 public class MyAdapter  extends BaseAdapter{
-    ArrayList<Subject> list;
+    List<passSubject> list;
     Context context;
     LayoutInflater inflater;
 
-    public MyAdapter(ArrayList<Subject> list, Context context) { // constructor here :))
+    public MyAdapter(List<passSubject> list, Context context) { // constructor here :))
         this.list = list;
         this.context = context;
         inflater = inflater.from(context);
@@ -52,14 +54,12 @@ public class MyAdapter  extends BaseAdapter{
             TextView txtLop= (TextView) convertView.findViewById(R.id.txt_Lop);
             TextView txtPhong= (TextView) convertView.findViewById(R.id.txt_Phong);
             TextView txtSoTiet = (TextView) convertView.findViewById(R.id.txt_soTiet);
-            TextView txtMaMH = (TextView) convertView.findViewById(R.id.txt_maMH);
             //
             txtMH.setText(list.get(position).getTenMH());
             txtTietBD.setText("- Tiết bắt đầu: "+list.get(position).getTietBD());
             txtLop.setText("- Mã lớp: "+list.get(position).getMaLop());
             txtPhong.setText("- Phòng: "+list.get(position).getPhong());
             txtSoTiet.setText("- Số tiết: "+list.get(position).getST());
-            txtMaMH.setText("- Mã môn học: "+list.get(position).getMaMH());
 
         }
 
