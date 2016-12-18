@@ -6,30 +6,18 @@
             android:id="@+id/nav_camera"
             android:icon="@drawable/ic_timetable"
             android:title="Schedule" />
-        <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_alarm"
-            android:title="Timer Setting " />
-        <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
-        <item
-            android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Tools" />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="About">
         <menu>
             <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_share"
-                android:title="Share" />
+                android:id="@+id/nav_us"
+                android:icon="@drawable/ic_author"
+                android:title="US" />
             <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_send"
-                android:title="Send" />
+                android:id="@+id/nav_product"
+                android:icon="@drawable/ic_product"
+                android:title="Product" />
         </menu>
     </item>
 
